@@ -52,7 +52,7 @@ terraform apply --auto-approve
 ### 3. Access Seafile
 Once the deployment completes, Terraform will output the public IP or domain of your Seafile server (check outputs.tf for details). Open a browser and navigate to:
 
-http://<ec2-public-ip>
+http://ec2-public-ip
 
 ![seafile-console](seafile-console-page.PNG)
 
