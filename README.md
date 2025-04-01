@@ -54,6 +54,8 @@ Once the deployment completes, Terraform will output the public IP or domain of 
 
 http://<ec2-public-ip>
 
+![seafile-console](seafile-console-page.PNG)
+
 Follow the Seafile setup wizard to configure your admin account and initial settings.
 
 ### 4. Customize Seafile Configuration (Optional)
