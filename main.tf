@@ -1,4 +1,13 @@
 # Configure the AWS provider
+terraform {
+  cloud {
+    organization = "toantd19_labs"
+
+    workspaces {
+      name = "seafile-setup-terraform"
+    }
+  }
+}
 provider "aws" {
   region = var.aws_region
 }
