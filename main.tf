@@ -10,6 +10,13 @@ terraform {
 }
 provider "aws" {
   region = var.aws_region
+  default_tags {
+    tags = {
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+      Client      = "Tom"
+    }
+  }
 }
 
 # Data source for current AWS account ID
