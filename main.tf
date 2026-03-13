@@ -24,19 +24,19 @@ variable "bucket_name" {
   default = "toantd19-unique-bucket-tfc-demo"
 }
 
-module "s3_bucket" {
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "~> 3.0"
+# module "s3_bucket" {
+#   source  = "terraform-aws-modules/s3-bucket/aws"
+#   version = "~> 3.0"
 
-  bucket = var.bucket_name
+#   bucket = var.bucket_name
 
-  acl    = "private"
-  versioning = {
-    enabled = true
-  }
+#   acl    = "private"
+#   versioning = {
+#     enabled = true
+#   }
 
-  tags = {
-    Environment = "dev"
-    ManagedBy   = "TerraformCloud"
-  }
-}
+#   tags = {
+#     Environment = "dev"
+#     ManagedBy   = "TerraformCloud"
+#   }
+# }
