@@ -1,23 +1,10 @@
-# Configure the AWS provider
-terraform {
-  cloud {
-    organization = "toantd19_labs"
-
-    workspaces {
-      name = "seafile-setup-terraform"
-    }
-  }
-}
 provider "aws" {
-  region = var.aws_region
-  default_tags {
-    tags = {
-      Environment = "dev"
-      ManagedBy   = "Terraform"
-      Client      = "Tom"
-    }
-  }
+  region = "ap-southeast-1"
 }
+
+# -----------------------
+# Default VPC
+# -----------------------
 data "aws_vpc" "default" {
   default = true
 }
@@ -44,7 +31,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 # -----------------------
-# AMI for ECS
+# AMI (FIXED x86_64)
 # -----------------------
 data "aws_ami" "ecs" {
   most_recent = true
@@ -52,7 +39,7 @@ data "aws_ami" "ecs" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-ecs-hvm-*"]
+    values = ["amzn2-ami-ecs-hvm-*-x86_64-ebs"]
   }
 }
 
@@ -69,6 +56,14 @@ resource "aws_launch_template" "lt" {
 echo ECS_CLUSTER=${aws_ecs_cluster.cluster.name} >> /etc/ecs/ecs.config
 EOF
   )
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = "demo"
+    }
+  }
 }
 
 # -----------------------
@@ -91,8 +86,7 @@ resource "aws_autoscaling_group" "asg" {
 # ECS Task Definition
 # -----------------------
 resource "aws_ecs_task_definition" "task" {
-  family = "demo-task"
-
+  family                   = "demo-task"
   requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([
@@ -114,17 +108,13 @@ resource "aws_ecs_task_definition" "task" {
 }
 
 # -----------------------
-# ECS Service (CodeDeploy)
+# ECS Service (NO CodeDeploy)
 # -----------------------
 resource "aws_ecs_service" "service" {
   name            = "demo-service"
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task.arn
   desired_count   = 1
-
-  deployment_controller {
-    type = "CODE_DEPLOY"
-  }
 }
 
 # -----------------------
@@ -161,39 +151,13 @@ resource "aws_iam_role" "codedeploy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "cd_ecs" {
-  role       = aws_iam_role.codedeploy.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForECS"
-}
-
 resource "aws_iam_role_policy_attachment" "cd_ec2" {
   role       = aws_iam_role.codedeploy.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
 # -----------------------
-# CodeDeploy ECS
-# -----------------------
-resource "aws_codedeploy_app" "ecs" {
-  name             = "ecs-app"
-  compute_platform = "ECS"
-}
-
-resource "aws_codedeploy_deployment_group" "ecs" {
-  app_name              = aws_codedeploy_app.ecs.name
-  deployment_group_name = "ecs-dg"
-  service_role_arn      = aws_iam_role.codedeploy.arn
-
-  deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
-
-  ecs_service {
-    cluster_name = aws_ecs_cluster.cluster.name
-    service_name = aws_ecs_service.service.name
-  }
-}
-
-# -----------------------
-# CodeDeploy EC2
+# CodeDeploy EC2 ONLY
 # -----------------------
 resource "aws_codedeploy_app" "ec2" {
   name             = "ec2-app"
@@ -223,7 +187,9 @@ resource "aws_codebuild_project" "build" {
   name         = "demo-build"
   service_role = aws_iam_role.codebuild.arn
 
-  artifacts { type = "NO_ARTIFACTS" }
+  artifacts {
+    type = "CODEPIPELINE"
+  }
 
   environment {
     compute_type    = "BUILD_GENERAL1_SMALL"
@@ -238,8 +204,7 @@ resource "aws_codebuild_project" "build" {
   }
 
   source {
-    type      = "GITHUB"
-    location  = "https://github.com/<your-repo>"
+    type      = "CODEPIPELINE"
     buildspec = "buildspec.yaml"
   }
 }
@@ -295,8 +260,8 @@ resource "aws_codepipeline" "pipeline" {
       output_artifacts = ["source"]
 
       configuration = {
-        Owner      = " toandinhtruong"
-        Repo       = "seafile-setup-terraform"
+        Owner      = "<github-user>"
+        Repo       = "<repo>"
         Branch     = "main"
         OAuthToken = "<token>"
       }
@@ -325,25 +290,11 @@ resource "aws_codepipeline" "pipeline" {
     name = "Deploy"
 
     action {
-      name            = "Deploy-ECS"
-      category        = "Deploy"
-      provider        = "CodeDeploy"
-      owner           = "AWS"
-      version          = "1"
-      input_artifacts = ["build"]
-
-      configuration = {
-        ApplicationName     = aws_codedeploy_app.ecs.name
-        DeploymentGroupName = aws_codedeploy_deployment_group.ecs.deployment_group_name
-      }
-    }
-
-    action {
       name            = "Deploy-EC2"
       category        = "Deploy"
       provider        = "CodeDeploy"
       owner           = "AWS"
-      version          = "1"
+      version         = "1"
       input_artifacts = ["build"]
 
       configuration = {
