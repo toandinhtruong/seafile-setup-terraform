@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+
+files:
+  - source: scripts/
+    destination: /home/ec2-user/demo
+
+hooks:
+  AfterInstall:
+    - location: scripts/start.sh
+      timeout: 300
+      runas: ec2-user

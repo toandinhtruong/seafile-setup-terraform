@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
+
+  build:
+    commands:
+      - mvn clean package
+      - docker build -t app .
+      - docker tag app:latest $REPO_URI:latest
+
+  post_build:
+    commands:
+      - docker push $REPO_URI:latest
+
+artifacts:
+  files:
+    - appspecs/**
+    - scripts/**
