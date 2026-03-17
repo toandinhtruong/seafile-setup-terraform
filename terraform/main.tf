@@ -311,6 +311,7 @@ resource "aws_codepipeline" "pipeline" {
       category         = "Build"
       provider         = "CodeBuild"
       owner            = "AWS"
+      version          = "1"
       input_artifacts  = ["source"]
       output_artifacts = ["build"]
 
@@ -328,6 +329,7 @@ resource "aws_codepipeline" "pipeline" {
       category        = "Deploy"
       provider        = "CodeDeploy"
       owner           = "AWS"
+      version          = "1"
       input_artifacts = ["build"]
 
       configuration = {
@@ -341,6 +343,7 @@ resource "aws_codepipeline" "pipeline" {
       category        = "Deploy"
       provider        = "CodeDeploy"
       owner           = "AWS"
+      version          = "1"
       input_artifacts = ["build"]
 
       configuration = {
