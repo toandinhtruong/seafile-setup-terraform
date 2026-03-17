@@ -295,8 +295,8 @@ resource "aws_codepipeline" "pipeline" {
       output_artifacts = ["source"]
 
       configuration = {
-        Owner      = "<github-user>"
-        Repo       = "<repo>"
+        Owner      = " toandinhtruong"
+        Repo       = "seafile-setup-terraform"
         Branch     = "main"
         OAuthToken = "<token>"
       }
