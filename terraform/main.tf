@@ -255,7 +255,7 @@ resource "aws_iam_role_policy" "pipeline_codestar" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = "codeconnections:UseConnection"
+      Action   = "codeconnections:*"
       Resource = "arn:aws:codeconnections:us-east-1:730335291032:connection/d117c58c-ae91-417f-9d1b-f195a4a84db9"
     },
     {
