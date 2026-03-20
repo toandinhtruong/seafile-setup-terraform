@@ -13,13 +13,6 @@ provider "aws" {
 }
 
 # -----------------------
-# VARIABLES
-# -----------------------
-variable "codestar_connection_arn" {
-  type = string
-}
-
-# -----------------------
 # Default VPC
 # -----------------------
 data "aws_vpc" "default" {
@@ -292,7 +285,7 @@ resource "aws_codepipeline" "pipeline" {
       output_artifacts = ["source"]
 
       configuration = {
-        ConnectionArn    = var.codestar_connection_arn
+        ConnectionArn    = "arn:aws:codeconnections:us-east-1:730335291032:connection/d117c58c-ae91-417f-9d1b-f195a4a84db9"
         FullRepositoryId = "toandinhtruong/seafile-setup-terraform"
         BranchName       = "main"
       }
