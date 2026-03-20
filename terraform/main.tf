@@ -1,4 +1,3 @@
-# Configure the AWS provider
 terraform {
   cloud {
     organization = "toantd19_labs"
@@ -8,8 +7,16 @@ terraform {
     }
   }
 }
+
 provider "aws" {
   region = "us-east-1"
+}
+
+# -----------------------
+# VARIABLES
+# -----------------------
+variable "codestar_connection_arn" {
+  type = string
 }
 
 # -----------------------
@@ -41,7 +48,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 # -----------------------
-# AMI (FIXED x86_64)
+# AMI (x86_64)
 # -----------------------
 data "aws_ami" "ecs" {
   most_recent = true
@@ -118,7 +125,7 @@ resource "aws_ecs_task_definition" "task" {
 }
 
 # -----------------------
-# ECS Service (NO CodeDeploy)
+# ECS Service
 # -----------------------
 resource "aws_ecs_service" "service" {
   name            = "demo-service"
@@ -167,7 +174,7 @@ resource "aws_iam_role_policy_attachment" "cd_ec2" {
 }
 
 # -----------------------
-# CodeDeploy EC2 ONLY
+# CodeDeploy (EC2)
 # -----------------------
 resource "aws_codedeploy_app" "ec2" {
   name             = "ec2-app"
@@ -222,12 +229,12 @@ resource "aws_codebuild_project" "build" {
 # -----------------------
 # S3 for Pipeline
 # -----------------------
-resource "aws_s3_bucket" "bucket" {
-  bucket = "demo-pipeline-${random_id.id.hex}"
-}
-
 resource "random_id" "id" {
   byte_length = 4
+}
+
+resource "aws_s3_bucket" "bucket" {
+  bucket = "demo-pipeline-${random_id.id.hex}"
 }
 
 # -----------------------
@@ -242,6 +249,21 @@ resource "aws_iam_role" "pipeline" {
       Effect = "Allow"
       Principal = { Service = "codepipeline.amazonaws.com" }
       Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+# ✅ FIXED PERMISSION FOR CODESTAR
+resource "aws_iam_role_policy" "pipeline_codestar" {
+  name = "pipeline-codestar-policy"
+  role = aws_iam_role.pipeline.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "codestar-connections:UseConnection"
+      Resource = var.codestar_connection_arn
     }]
   })
 }
@@ -270,7 +292,7 @@ resource "aws_codepipeline" "pipeline" {
       output_artifacts = ["source"]
 
       configuration = {
-        ConnectionArn    = "arn:aws:codeconnections:us-east-1:730335291032:connection/d117c58c-ae91-417f-9d1b-f195a4a84db9"
+        ConnectionArn    = var.codestar_connection_arn
         FullRepositoryId = "toandinhtruong/seafile-setup-terraform"
         BranchName       = "main"
       }
