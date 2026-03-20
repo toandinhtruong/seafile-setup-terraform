@@ -143,6 +143,11 @@ resource "aws_iam_role" "codebuild" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "codebuild_logs" {
+  role       = aws_iam_role.codebuild.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
 resource "aws_iam_role_policy_attachment" "codebuild_ecr" {
   role       = aws_iam_role.codebuild.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
@@ -215,7 +220,7 @@ resource "aws_codebuild_project" "build" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "buildspec.yaml"
+    buildspec = "demo-app/buildspec.yaml"
   }
 }
 
