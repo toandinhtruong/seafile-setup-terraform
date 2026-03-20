@@ -257,7 +257,24 @@ resource "aws_iam_role_policy" "pipeline_codestar" {
       Effect   = "Allow"
       Action   = "codeconnections:UseConnection"
       Resource = "arn:aws:codeconnections:us-east-1:730335291032:connection/d117c58c-ae91-417f-9d1b-f195a4a84db9"
-    }]
+    },
+    {
+      Effect = "Allow"
+      Action = [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:PutObject"
+      ]
+      Resource = "${aws_s3_bucket.bucket.arn}/*"
+    },
+    {
+      Effect = "Allow"
+      Action = [
+        "s3:GetBucketLocation"
+      ]
+      Resource = aws_s3_bucket.bucket.arn
+    }
+]
   })
 }
 
