@@ -264,16 +264,15 @@ resource "aws_codepipeline" "pipeline" {
     action {
       name             = "Source"
       category         = "Source"
-      provider         = "GitHub"
-      owner            = "ThirdParty"
+      provider         = "CodeStarSourceConnection"
+      owner            = "AWS"
       version          = "1"
       output_artifacts = ["source"]
 
       configuration = {
-        Owner      = "<github-user>"
-        Repo       = "<repo>"
-        Branch     = "main"
-        OAuthToken = "<token>"
+        ConnectionArn    = "arn:aws:codeconnections:us-east-1:730335291032:connection/d117c58c-ae91-417f-9d1b-f195a4a84db9"
+        FullRepositoryId = "toandinhtruong/seafile-setup-terraform"
+        BranchName       = "main"
       }
     }
   }
