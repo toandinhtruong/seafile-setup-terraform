@@ -275,6 +275,14 @@ resource "aws_iam_role_policy" "pipeline_codestar" {
         "s3:GetBucketLocation"
       ]
       Resource = aws_s3_bucket.bucket.arn
+    },
+    {
+      Effect = "Allow"
+      Action = [
+        "codebuild:*",
+        "codedeploy:*"
+      ]
+      Resource = "*"
     }
 ]
   })
